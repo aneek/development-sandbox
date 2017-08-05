@@ -1,61 +1,48 @@
-nginx:
-    container_name: sandbox_nginx
-    build: ./nginx/
-    ports:
-        - 80:80
-    links:
-        - php
-    volumes_from:
-        - app
-    restart: always
-
-php:
-    container_name: sandbox_php
-    build: ./php/
-    expose:
-        - 9000
-    links:
-        - mysql
-        - redis
-    volumes:
-        - ./php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini
-    volumes_from:
-        - app
-    restart: always
-
-app:
-    container_name: sandbox_volume_app
-    image: php:7.1-fpm
-    volumes:
-        - ./www:/var/www/html
-        - ./apps:/var/www/apps
-    command: "true"
-
-mysql:
-    container_name: sandbox_mysql
-    build: ./mysql/
-    ports:
-        - 3306:3306
-    volumes_from:
-        - data
-    environment:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_USER: dbuser
-        MYSQL_PASSWORD: password
-    restart: always
-
-data:
-    container_name: sandbox_volume_data
-    image: mysql:latest
-    volumes:
-        - ./database:/var/lib/mysql
-    command: "true"
-
-redis:
-    container_name: sandbox_redis
-    image: redis:latest
-    ports:
-        - 6379:6379
-    volumes:
-        - ./redis-data:/data
-    restart: always
+version: "3"
+    services:
+        nginx:
+            container_name: sandbox-nginx-container
+            build: ./builds/nginx/
+            ports:
+                - 80:80
+            volumes:
+                - "./builds/nginx/conf:/etc/nginx/conf.d"
+                - "./persistent/www:/var/www/html"
+            depends_on:
+                - php
+            links:
+                - php
+            restart: always
+        php:
+            container_name: sandbox-php-container
+            build: ./builds/php/
+            expose:
+                - 9000
+            volumes:
+                - "./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini"
+                - "./persistent/www:/var/www/html"
+            depends_on:
+                - mysql
+                - redis
+            links:
+                - mysql
+                - redis
+            restart: always
+        mysql:
+            container_name: sandbox-mysql-container
+            build: ./builds/mysql/
+            ports:
+                - 3306:3306
+            volumes:
+                - "./persistent/mysql:/var/lib/mysql"
+            environment:
+                - MYSQL_ROOT_PASSWORD=root
+            restart: always
+        redis:
+            container_name: sandbox-redis-container
+            build: ./builds/redis/
+            ports:
+                - 6379:6379
+            volumes:
+                - "./persistent/redis:/data"
+            restart: always
