@@ -1,48 +1,61 @@
 version: "3"
-    services:
-        nginx:
-            container_name: sandbox-nginx-container
-            build: ./builds/nginx/
-            ports:
-                - 80:80
-            volumes:
-                - "./builds/nginx/conf:/etc/nginx/conf.d"
-                - "./persistent/www:/var/www/html"
-            depends_on:
-                - php
-            links:
-                - php
-            restart: always
-        php:
-            container_name: sandbox-php-container
-            build: ./builds/php/
-            expose:
-                - 9000
-            volumes:
-                - "./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini"
-                - "./persistent/www:/var/www/html"
-            depends_on:
-                - mysql
-                - redis
-            links:
-                - mysql
-                - redis
-            restart: always
-        mysql:
-            container_name: sandbox-mysql-container
-            build: ./builds/mysql/
-            ports:
-                - 3306:3306
-            volumes:
-                - "./persistent/mysql:/var/lib/mysql"
-            environment:
-                - MYSQL_ROOT_PASSWORD=root
-            restart: always
-        redis:
-            container_name: sandbox-redis-container
-            build: ./builds/redis/
-            ports:
-                - 6379:6379
-            volumes:
-                - "./persistent/redis:/data"
-            restart: always
+
+services:
+    nginx:
+        container_name: sandbox-nginx-container
+        build: ./builds/nginx/
+        ports:
+            - 80:80
+        volumes:
+            - "./builds/nginx/conf:/etc/nginx/conf.d"
+            - "./persistent/www:/var/www/html"
+        depends_on:
+            - php
+        links:
+            - php
+        restart: always
+        # If need to add host entries then add 'extra_hosts'
+        extra_hosts:
+            - "cakephp-sandbox.local:127.0.0.1"
+    php:
+        container_name: sandbox-php-container
+        build: ./builds/php/
+        expose:
+            - 9000
+        volumes:
+            - "./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini"
+            - "./builds/php/conf/msmtprc:/etc/msmtprc"
+            - "./persistent/www:/var/www/html"
+        depends_on:
+            - mysql
+            - redis
+            - mailcatcher
+        links:
+            - mysql
+            - redis
+            - mailcatcher
+        restart: always
+    mysql:
+        container_name: sandbox-mysql-container
+        build: ./builds/mysql/
+        ports:
+            - 3306:3306
+        volumes:
+            - "./persistent/mysql:/var/lib/mysql"
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        restart: always
+    redis:
+        container_name: sandbox-redis-container
+        build: ./builds/redis/
+        ports:
+            - 6379:6379
+        volumes:
+            - "./persistent/redis:/data"
+        restart: always
+    mailcatcher:
+        container_name: sandbox-mailcatcher-container
+        build: ./builds/mailcatcher/
+        ports:
+            - 1025:1025
+            - 1080:1080

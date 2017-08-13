@@ -34,6 +34,8 @@ RUN apt-get install -y \
     libicu-dev \
     libpng-dev \
     libjpeg-dev \
+    msmtp \
+    ca-certificates \
 	&& rm -r /var/lib/apt/lists/*
   
   
@@ -69,6 +71,10 @@ RUN composer global require drush/drush:8.*
 
 # Install Drupal Console and make it available in the PATH
 RUN curl -sS http://drupalconsole.com/installer | php -- --install-dir=/usr/bin/ --filename=drupal-console
+
+# msmtp Configurations
+RUN touch /etc/msmtprc
+
 
 # Clean
 RUN apt-get clean && apt-get autoremove -y
