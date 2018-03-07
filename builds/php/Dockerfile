@@ -15,7 +15,8 @@ RUN apt-get install -y wget && wget https://www.dotdeb.org/dotdeb.gpg && apt-key
 RUN apt-get update
 
 # Install general utilities
-RUN apt-get install -y \
+RUN apt-get install --no-install-recommends --assume-yes --quiet \
+    curl \
 		vim \
 		net-tools \
 		procps \
@@ -34,8 +35,13 @@ RUN apt-get install -y \
     libicu-dev \
     libpng-dev \
     libjpeg-dev \
-    msmtp \
     ca-certificates \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng12-dev \
+    libxpm-dev \
+    libvpx-dev \
+    && apt-get clean \
 	&& rm -r /var/lib/apt/lists/*
   
   
@@ -46,14 +52,24 @@ RUN docker-php-ext-install -j$(nproc) json mbstring opcache pdo pdo_mysql mysqli
 RUN docker-php-ext-install -j$(nproc) curl
 
 # GD
-RUN docker-php-ext-install -j$(nproc) gd
+RUN apt-get update && apt-get install -y \
+		libfreetype6-dev \
+		libjpeg62-turbo-dev \
+		libmcrypt-dev \
+		libpng12-dev \
+	&& docker-php-ext-install -j$(nproc) iconv mcrypt \
+	&& docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+	&& docker-php-ext-install -j$(nproc) gd
 
 # Intl
 RUN docker-php-ext-install -j$(nproc) intl
 
 #Apcu
 RUN pecl install apcu-5.1.5 && docker-php-ext-enable apcu
-  
+
+#Exif
+RUN docker-php-ext-install exif && docker-php-ext-enable exif
+
 # Install Composer and make it available in the PATH
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
@@ -67,13 +83,15 @@ RUN composer global require phpmd/phpmd:"@stable"
 RUN composer global require sebastian/phpcpd
 RUN composer global require drupal/coder
 RUN composer global require friendsofphp/php-cs-fixer
-RUN composer global require drush/drush:8.*
 
 # Install Drupal Console and make it available in the PATH
 RUN curl -sS http://drupalconsole.com/installer | php -- --install-dir=/usr/bin/ --filename=drupal-console
 
-# msmtp Configurations
-RUN touch /etc/msmtprc
+# Install GO
+RUN curl -Lsf 'https://storage.googleapis.com/golang/go1.9.1.linux-amd64.tar.gz' | tar -C '/usr/local' -xvzf -
+ENV PATH /usr/local/go/bin:$PATH
+RUN go get github.com/mailhog/mhsendmail
+RUN cp /root/go/bin/mhsendmail /usr/bin/mhsendmail
 
 
 # Clean

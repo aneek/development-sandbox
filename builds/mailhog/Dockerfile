@@ -1,2 +1,2 @@
-FROM rordi/docker-mailcatcher
+FROM mailhog/mailhog:latest
 MAINTAINER Aneek Mukhopadhyay <dream.aneek@gmail.com>

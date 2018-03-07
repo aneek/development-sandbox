@@ -9,32 +9,40 @@ services:
         volumes:
             - "./builds/nginx/conf:/etc/nginx/conf.d"
             - "./persistent/www:/var/www/html"
-        depends_on:
-            - php
         links:
             - php
         restart: always
+        stdin_open: true
+        tty: true
+        depends_on:
+            - php
         # If need to add host entries then add 'extra_hosts'
         extra_hosts:
             - "cakephp-sandbox.local:127.0.0.1"
+            - "drupal7-sandbox.local:127.0.0.1"
+            - "drupal8-sandbox.local:127.0.0.1"
+            - "api.nannybackend.local:127.0.0.1"
+            - "api.slim-nannybackend.local:127.0.0.1"
+            - "finegames.local:127.0.0.1"
     php:
         container_name: sandbox-php-container
         build: ./builds/php/
         expose:
             - 9000
         volumes:
-            - "./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini"
-            - "./builds/php/conf/msmtprc:/etc/msmtprc"
+            - ./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini
             - "./persistent/www:/var/www/html"
-        depends_on:
-            - mysql
-            - redis
-            - mailcatcher
         links:
             - mysql
             - redis
-            - mailcatcher
+            - mailhog
+        depends_on:
+            - mysql
+            - redis
+            - mailhog
         restart: always
+        stdin_open: true
+        tty: true
     mysql:
         container_name: sandbox-mysql-container
         build: ./builds/mysql/
@@ -45,6 +53,8 @@ services:
         environment:
             - MYSQL_ROOT_PASSWORD=root
         restart: always
+        stdin_open: true
+        tty: true
     redis:
         container_name: sandbox-redis-container
         build: ./builds/redis/
@@ -53,9 +63,24 @@ services:
         volumes:
             - "./persistent/redis:/data"
         restart: always
-    mailcatcher:
-        container_name: sandbox-mailcatcher-container
-        build: ./builds/mailcatcher/
+        stdin_open: true
+        tty: true
+    mailhog:
+        container_name: sandbox-mailhog-container
+        build: ./builds/mailhog/
         ports:
             - 1025:1025
-            - 1080:1080
+            - 8025:8025
+        restart: always
+        stdin_open: true
+        tty: true
+    nodejs:
+        container_name: sandbox-nodejs-container
+        build: ./builds/nodejs/
+        volumes:
+            - "./persistent/node-apps:/var/www/node-apps"
+        ports:
+            - 3000:3000
+        restart: always
+        stdin_open: true
+        tty: true
