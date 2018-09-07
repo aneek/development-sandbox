@@ -9,7 +9,7 @@ RUN echo 'deb-src http://packages.dotdeb.org jessie all' >> /etc/apt/sources.lis
 RUN apt-get update
 
 # Install wget for getting other sources.
-RUN apt-get install -y wget && wget https://www.dotdeb.org/dotdeb.gpg && apt-key add dotdeb.gpg
+RUN apt-get install -y wget gnupg && wget https://www.dotdeb.org/dotdeb.gpg && apt-key add dotdeb.gpg
 
 # Update the whole resources and the system.
 RUN apt-get update
@@ -38,9 +38,10 @@ RUN apt-get install --no-install-recommends --assume-yes --quiet \
     ca-certificates \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
-    libpng12-dev \
     libxpm-dev \
     libvpx-dev \
+    mysql-client \
+    libxslt-dev \
     && apt-get clean \
 	&& rm -r /var/lib/apt/lists/*
   
@@ -56,10 +57,13 @@ RUN apt-get update && apt-get install -y \
 		libfreetype6-dev \
 		libjpeg62-turbo-dev \
 		libmcrypt-dev \
-		libpng12-dev \
 	&& docker-php-ext-install -j$(nproc) iconv mcrypt \
 	&& docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-	&& docker-php-ext-install -j$(nproc) gd
+	&& docker-php-ext-install -j$(nproc) gd \
+	&& docker-php-ext-install bcmath \
+  && docker-php-ext-install xsl \
+  && docker-php-ext-install soap \
+  && docker-php-ext-install simplexml
 
 # Intl
 RUN docker-php-ext-install -j$(nproc) intl
@@ -83,9 +87,13 @@ RUN composer global require phpmd/phpmd:"@stable"
 RUN composer global require sebastian/phpcpd
 RUN composer global require drupal/coder
 RUN composer global require friendsofphp/php-cs-fixer
+RUN composer clearcache
 
 # Install Drupal Console and make it available in the PATH
-RUN curl -sS http://drupalconsole.com/installer | php -- --install-dir=/usr/bin/ --filename=drupal-console
+RUN curl https://drupalconsole.com/installer -L -o drupal.phar
+RUN mv drupal.phar /usr/local/bin/drupal
+RUN chmod +x /usr/local/bin/drupal
+
 
 # Install GO
 RUN curl -Lsf 'https://storage.googleapis.com/golang/go1.9.1.linux-amd64.tar.gz' | tar -C '/usr/local' -xvzf -

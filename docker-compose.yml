@@ -1,86 +1,94 @@
 version: "3"
 
 services:
-    nginx:
-        container_name: sandbox-nginx-container
-        build: ./builds/nginx/
-        ports:
-            - 80:80
-        volumes:
-            - "./builds/nginx/conf:/etc/nginx/conf.d"
-            - "./persistent/www:/var/www/html"
-        links:
-            - php
-        restart: always
-        stdin_open: true
-        tty: true
-        depends_on:
-            - php
-        # If need to add host entries then add 'extra_hosts'
-        extra_hosts:
-            - "cakephp-sandbox.local:127.0.0.1"
-            - "drupal7-sandbox.local:127.0.0.1"
-            - "drupal8-sandbox.local:127.0.0.1"
-            - "api.nannybackend.local:127.0.0.1"
-            - "api.slim-nannybackend.local:127.0.0.1"
-            - "finegames.local:127.0.0.1"
-    php:
-        container_name: sandbox-php-container
-        build: ./builds/php/
-        expose:
-            - 9000
-        volumes:
-            - ./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini
-            - "./persistent/www:/var/www/html"
-        links:
-            - mysql
-            - redis
-            - mailhog
-        depends_on:
-            - mysql
-            - redis
-            - mailhog
-        restart: always
-        stdin_open: true
-        tty: true
-    mysql:
-        container_name: sandbox-mysql-container
-        build: ./builds/mysql/
-        ports:
-            - 3306:3306
-        volumes:
-            - "./persistent/mysql:/var/lib/mysql"
-        environment:
-            - MYSQL_ROOT_PASSWORD=root
-        restart: always
-        stdin_open: true
-        tty: true
-    redis:
-        container_name: sandbox-redis-container
-        build: ./builds/redis/
-        ports:
-            - 6379:6379
-        volumes:
-            - "./persistent/redis:/data"
-        restart: always
-        stdin_open: true
-        tty: true
-    mailhog:
-        container_name: sandbox-mailhog-container
-        build: ./builds/mailhog/
-        ports:
-            - 1025:1025
-            - 8025:8025
-        restart: always
-        stdin_open: true
-        tty: true
-    nodejs:
-        container_name: sandbox-nodejs-container
-        build: ./builds/nodejs/
-        volumes:
-            - "./persistent/node-apps:/var/www/node-apps"
-        ports:
-            - 3000:3000
-        restart: always
-        stdin_open: true
-        tty: true
+  # Nginx container.
+  nginx:
+    container_name: sandbox-nginx-container
+    build: ./builds/nginx/
+    ports:
+      - 80:80
+    volumes:
+      - "./builds/nginx/conf:/etc/nginx/conf.d"
+      - "./persistent/www:/var/www/html"
+    links:
+      - php
+    stdin_open: true
+    tty: true
+    depends_on:
+      - php
+    # If need to add host entries then add 'extra_hosts'
+    extra_hosts:
+      - "traveldiary.local:127.0.0.1"
+      - "magento-sandbox.local:127.0.0.1"
+  # PHP container.
+  php:
+    container_name: sandbox-php-container
+    build: ./builds/php/
+    expose:
+      - 9000
+    volumes:
+      - ./builds/php/conf/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - "./persistent/www:/var/www/html"
+    links:
+      - mysql
+      - redis
+      - mailhog
+    depends_on:
+      - mysql
+      - redis
+      - mailhog
+    stdin_open: true
+    tty: true
+  # MySQL Container.
+  mysql:
+    container_name: sandbox-mysql-container
+    build: ./builds/mysql/
+    ports:
+      - 3306:3306
+    volumes:
+      - "./persistent/mysql:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    stdin_open: true
+    tty: true
+  # Redis Container. 
+  redis:
+    container_name: sandbox-redis-container
+    build: ./builds/redis/
+    ports:
+      - 6379:6379
+    volumes:
+      - "./persistent/redis:/data"
+    stdin_open: true
+    tty: true
+  # Mailhog Container.
+  mailhog:
+    container_name: sandbox-mailhog-container
+    build: ./builds/mailhog/
+    ports:
+      - 1025:1025
+      - 8025:8025
+    stdin_open: true
+    tty: true
+  # Node.js Container.
+  nodejs:
+    container_name: sandbox-nodejs-container
+    build: ./builds/nodejs/
+    volumes:
+      - "./persistent/node-apps:/var/www/node-apps"
+    ports:
+      - 3000:3000
+    stdin_open: true
+    tty: true
+  # PhpMyAdmin Container.
+  phpmyadmin:
+    container_name: sandbox-phpmyadmin-container
+    build: ./builds/phpmyadmin/
+    links:
+      - mysql:mysql
+    ports:
+      - 8080:80
+    environment:
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: root
+      PMA_HOSTS: "mysql"
