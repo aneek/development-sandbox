@@ -20,6 +20,9 @@ services:
     extra_hosts:
       - "traveldiary.local:127.0.0.1"
       - "magento-sandbox.local:127.0.0.1"
+      - "api.twinkletoesschedule.local:127.0.0.1"
+      - "ds.local:127.0.0.1"
+      - "twinkletoesnanny.local:127.0.0.1"
   # PHP container.
   php:
     container_name: sandbox-php-container

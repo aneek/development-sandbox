@@ -31,6 +31,7 @@ RUN apt-get install --no-install-recommends --assume-yes --quiet \
 		dnsutils \
     zlib1g-dev \
     cron \
+    iputils-ping \
     libcurl4-openssl-dev \
     libicu-dev \
     libpng-dev \
@@ -74,6 +75,10 @@ RUN pecl install apcu-5.1.5 && docker-php-ext-enable apcu
 #Exif
 RUN docker-php-ext-install exif && docker-php-ext-enable exif
 
+# Install PECL extensions
+RUN pecl install xdebug
+RUN docker-php-ext-enable xdebug
+
 # Install Composer and make it available in the PATH
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
@@ -82,7 +87,7 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV PATH "$PATH:/root/.composer/vendor/bin"
 
 # Install PHPCS and Drupal Coding Standards
-RUN composer global require "squizlabs/php_codesniffer=^2.9"
+RUN composer global require "squizlabs/php_codesniffer=^3.0"
 RUN composer global require phpmd/phpmd:"@stable"
 RUN composer global require sebastian/phpcpd
 RUN composer global require drupal/coder
